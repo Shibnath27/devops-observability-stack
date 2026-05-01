@@ -93,7 +93,7 @@ In this module, we move beyond infrastructure setup and focus on **system visibi
 ## 📁 Directory Structure
 
 ```
-observability-for-devops/
+devops-observability-stack/
 └── day-01/
     ├── docker-compose.yml
     └── prometheus.yml
@@ -103,7 +103,15 @@ observability-for-devops/
 
 # ⚙️ 5. Prometheus Configuration
 
+## Create a project directory for this entire observability block -- you will keep adding to it over the next 5 days.
+
+```bash
+mkdir observability-stack && cd observability-stack
+```
+
 ## 📄 prometheus.yml
+
+Create a prometheus.yml configuration file:
 
 ```yaml
 global:
@@ -125,6 +133,8 @@ scrape_configs:
 # 🐳 6. Docker Compose Setup
 
 ## 📄 docker-compose.yml
+
+Create a docker-compose.yml to run Prometheus:
 
 ```yaml
 services:
