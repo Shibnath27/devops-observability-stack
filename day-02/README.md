@@ -57,7 +57,7 @@ Exposes:
 
 ---
 
-## 🐳 Service Configuration
+## 🐳 Service Configuration (docker-compose.yml)
 
 ```yaml
 node-exporter:
@@ -76,7 +76,12 @@ node-exporter:
     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
   restart: unless-stopped
 ```
+Why these volume mounts?
 
+1. /proc -- kernel and process information (CPU stats, memory info)
+2. /sys -- hardware and driver details
+3. *.*/ -- filesystem usage (disk space)
+All mounted read-only (ro) -- Node Exporter only reads, never modifies.
 ---
 
 ## 🔍 Verify
