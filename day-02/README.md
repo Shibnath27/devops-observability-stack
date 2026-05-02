@@ -78,10 +78,27 @@ node-exporter:
 ```
 Why these volume mounts?
 
-1. /proc -- kernel and process information (CPU stats, memory info)
-2. /sys -- hardware and driver details
-3. *.*/ -- filesystem usage (disk space)
+* /proc -- kernel and process information (CPU stats, memory info)
+* /sys -- hardware and driver details
+* -- filesystem usage (disk space)
 All mounted read-only (ro) -- Node Exporter only reads, never modifies.
+
+Add it as a scrape target in prometheus.yml:
+```yaml
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+```
+Restart the stack:
+
+```bash
+docker compose up -d
+```
 ---
 
 ## 🔍 Verify
@@ -95,10 +112,20 @@ curl http://localhost:9100/metrics | head -20
 ## 📊 Sample Queries
 
 ```promql
+# CPU: percentage of time spent idle (per core)
 node_cpu_seconds_total{mode="idle"}
 
+# Memory: total vs available
+node_memory_MemTotal_bytes
+node_memory_MemAvailable_bytes
+
+# Memory usage percentage
 (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
 
+# Disk: filesystem usage percentage
+(1 - node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100
+
+# Network: bytes received per second
 rate(node_network_receive_bytes_total[5m])
 ```
 
@@ -117,7 +144,7 @@ Tracks:
 
 ---
 
-## 🐳 Service Configuration
+## 🐳 Service Configuration (Add it to your docker-compose.yml)
 
 ```yaml
 cadvisor:
@@ -131,7 +158,23 @@ cadvisor:
     - /var/lib/docker/:/var/lib/docker:ro
   restart: unless-stopped
 ```
+Why these volume mounts?
 
+* Docker socket (docker.sock) -- lets cAdvisor discover and query running containers
+* /sys -- kernel-level container stats (cgroups)
+* /var/lib/docker/ -- container filesystem information
+Add cAdvisor as a Prometheus scrape target:
+
+```yaml
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+```
+Restart the stack:
+
+```bash
+docker compose up -d
+```
 ---
 
 ## 🔍 Verify
@@ -147,10 +190,16 @@ http://localhost:8080
 ## 📊 Sample Queries
 
 ```promql
+# CPU usage per container (in seconds)
 rate(container_cpu_usage_seconds_total{name!=""}[5m])
 
+# Memory usage per container
 container_memory_usage_bytes{name!=""}
 
+# Network received bytes per container
+rate(container_network_receive_bytes_total{name!=""}[5m])
+
+# Which container is using the most memory?
 topk(3, container_memory_usage_bytes{name!=""})
 ```
 
@@ -191,7 +240,9 @@ scrape_configs:
 
 # 📊 4. Grafana Setup
 
-## 🐳 Service Configuration
+Grafana is the visualization layer. It connects to Prometheus (and later Loki) and lets you build dashboards, set alerts, and share views with your team.
+
+## 🐳 Service Configuration (Add Grafana to your docker-compose.yml)
 
 ```yaml
 grafana:
@@ -207,7 +258,17 @@ grafana:
     - GF_SECURITY_ADMIN_PASSWORD=admin123
   restart: unless-stopped
 ```
+Add the volume at the bottom of your compose file:
 
+```yaml
+volumes:
+  prometheus_data:
+  grafana_data:
+```
+Restart:
+```bash
+docker compose up -d
+```
 ---
 
 ## 🔐 Login
@@ -219,11 +280,26 @@ http://localhost:3000
 Username: `admin`
 Password: `admin123`
 
+
+Add Prometheus as a datasource:
+
+1. Go to Connections > Data Sources > Add data source
+2. Select Prometheus
+3. Set URL to http://prometheus:9090 (use the container name, not localhost -- they are on the same Docker network)
+4. Click Save & Test -- you should see "Successfully queried the Prometheus API"
+
 ---
 
 # ⚙️ 5. Auto-Provision Datasource
 
-## 📄 datasources.yml
+In production, you do not click through the UI to add datasources. You provision them with configuration files so the setup is repeatable.
+
+Create the provisioning directory structure:
+```bash
+mkdir -p grafana/provisioning/datasources
+mkdir -p grafana/provisioning/dashboards
+```
+## 📄 grafana/provisioning/datasources/datasources.yml:
 
 ```yaml
 apiVersion: 1
@@ -236,7 +312,11 @@ datasources:
     isDefault: true
     editable: false
 ```
-
+Restart Grafana:
+```bash
+docker compose up -d grafana
+```
+Check Connections > Data Sources -- Prometheus should already be there without any manual setup.
 ---
 
 ## 💡 Why provisioning?
