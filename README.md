@@ -18,38 +18,9 @@ Build an end-to-end observability system that answers:
 
 # 🧠 Architecture Overview
 
-```text
-                        ┌────────────────────┐
-                        │     Grafana        │
-                        │ Dashboards + Alerts│
-                        └─────────┬──────────┘
-                                  │
-        ┌─────────────────────────┼─────────────────────────┐
-        │                         │                         │
-        ▼                         ▼                         ▼
+<img width="1536" height="1024" alt="ChatGPT Image May 5, 2026, 04_04_23 PM" src="https://github.com/user-attachments/assets/69e30e0b-b2a9-45e7-a83d-8d8265718853" />
 
-   ┌──────────────┐        ┌──────────────┐         ┌──────────────┐
-   │ Prometheus   │        │    Loki      │         │ OTEL Collector│
-   │ (Metrics DB) │        │ (Logs Store) │         │ (Traces Pipe) │
-   └──────┬───────┘        └──────┬───────┘         └──────┬────────┘
-          │                       │                        │
-          ▼                       ▼                        ▼
 
- ┌──────────────┐        ┌──────────────┐         ┌──────────────┐
- │ NodeExporter │        │   Promtail   │         │   OTLP Input │
- │ (Host Metrics)│       │ (Log Agent)  │         │ (App / curl) │
- └──────────────┘        └──────────────┘         └──────────────┘
-
- ┌──────────────┐
- │  cAdvisor    │
- │ (Containers) │
- └──────────────┘
-
- ┌──────────────┐
- │  Notes App   │
- │ Demo Workload│
- └──────────────┘
-```
 
 ---
 
@@ -88,6 +59,7 @@ Application / curl
         ↓
  Debug Output (future: Tempo)
 ```
+<img width="949" height="282" alt="flowdiagram" src="https://github.com/user-attachments/assets/d6682c82-7921-491e-8f78-7f4b007e3050" />
 
 ---
 
@@ -116,6 +88,8 @@ Application / curl
 
 * Prometheus rules (infrastructure alerts)
 * Grafana alerts (application-level alerts)
+
+<img width="476" height="353" alt="workflows" src="https://github.com/user-attachments/assets/9fc4b130-06e3-4b29-b462-aaca15d2d29e" />
 
 ---
 
