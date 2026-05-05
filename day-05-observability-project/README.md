@@ -197,11 +197,11 @@ Grafana alerting used for:
 
 | Day | Concept                             |
 | --- | ----------------------------------- |
-| 73  | Prometheus, metrics                 |
-| 74  | Node Exporter, cAdvisor, dashboards |
-| 75  | Loki, Promtail, logs                |
-| 76  | OTEL, traces, alerting              |
-| 77  | Full stack integration              |
+| 01  | Prometheus, metrics                 |
+| 02  | Node Exporter, cAdvisor, dashboards |
+| 03  | Loki, Promtail, logs                |
+| 04  | OTEL, traces, alerting              |
+| 05  | Full stack integration              |
 
 ---
 
