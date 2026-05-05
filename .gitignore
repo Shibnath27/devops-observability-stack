@@ -1,0 +1,57 @@
+# ========================
+# Docker / Containers
+# ========================
+*.log
+*.pid
+
+# ========================
+# Prometheus data
+# ========================
+prometheus_data/
+*/prometheus_data/
+
+# ========================
+# Grafana data
+# ========================
+grafana_data/
+*/grafana_data/
+
+# ========================
+# Loki data
+# ========================
+loki_data/
+*/loki_data/
+
+# ========================
+# Temp / Positions (Promtail)
+# ========================
+*.yaml.tmp
+positions.yaml
+/tmp/
+
+# ========================
+# Environment / Secrets
+# ========================
+.env
+
+# ========================
+# OS / Editor files
+# ========================
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# ========================
+# Terraform (if added later)
+# ========================
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# ========================
+# Python (if OTEL apps added later)
+# ========================
+__pycache__/
+*.pyc

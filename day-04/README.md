@@ -105,7 +105,9 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 processors:
   batch:
@@ -122,12 +124,10 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
-
     traces:
       receivers: [otlp]
       processors: [batch]
       exporters: [debug]
-
     logs:
       receivers: [otlp]
       processors: [batch]
