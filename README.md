@@ -1,4 +1,4 @@
-# 🚀 DevOps Observability Stack (Day 73–77)
+# 🚀 DevOps Observability Stack (Day 01-05)
 
 A complete, production-style observability platform built step-by-step using **Prometheus, Grafana, Loki, and OpenTelemetry**.
 
