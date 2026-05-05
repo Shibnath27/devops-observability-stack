@@ -1,43 +1,148 @@
-# 🚀 Observability Stack for DevOps 
+# 🚀 DevOps Observability Stack (Day 73–77)
 
-A complete, production-style observability stack covering **metrics, logs, and traces** using Docker Compose.
+A complete, production-style observability platform built step-by-step using **Prometheus, Grafana, Loki, and OpenTelemetry**.
 
-This project integrates everything built across Day 01–05 into a single system that can be deployed with one command.
+This repository demonstrates how to design, deploy, and validate **metrics, logs, and traces pipelines**—the three pillars of modern observability.
 
 ---
 
-## 📌 Architecture Overview
+# 🎯 Project Goal
 
+Build an end-to-end observability system that answers:
+
+* What is broken? → **Metrics**
+* Why is it broken? → **Logs**
+* Where did it break? → **Traces**
+
+---
+
+# 🧠 Architecture Overview
+
+```text
+                        ┌────────────────────┐
+                        │     Grafana        │
+                        │ Dashboards + Alerts│
+                        └─────────┬──────────┘
+                                  │
+        ┌─────────────────────────┼─────────────────────────┐
+        │                         │                         │
+        ▼                         ▼                         ▼
+
+   ┌──────────────┐        ┌──────────────┐         ┌──────────────┐
+   │ Prometheus   │        │    Loki      │         │ OTEL Collector│
+   │ (Metrics DB) │        │ (Logs Store) │         │ (Traces Pipe) │
+   └──────┬───────┘        └──────┬───────┘         └──────┬────────┘
+          │                       │                        │
+          ▼                       ▼                        ▼
+
+ ┌──────────────┐        ┌──────────────┐         ┌──────────────┐
+ │ NodeExporter │        │   Promtail   │         │   OTLP Input │
+ │ (Host Metrics)│       │ (Log Agent)  │         │ (App / curl) │
+ └──────────────┘        └──────────────┘         └──────────────┘
+
+ ┌──────────────┐
+ │  cAdvisor    │
+ │ (Containers) │
+ └──────────────┘
+
+ ┌──────────────┐
+ │  Notes App   │
+ │ Demo Workload│
+ └──────────────┘
 ```
-                    METRICS PIPELINE
-Node Exporter ─┐
-cAdvisor ──────┼──> Prometheus ────> Grafana Dashboards
-OTEL Collector ┘         │
-                         └── Alert Rules
 
-                    LOGS PIPELINE
-Docker → Promtail → Loki → Grafana (Explore + Panels)
+---
 
-                    TRACES PIPELINE
-App / curl → OTEL Collector → Debug Output (future: Tempo)
+# 🔁 Data Flow (End-to-End)
+
+## 📊 Metrics Pipeline
+
+```text
+Node Exporter / cAdvisor / OTEL
+        ↓
+   Prometheus (scrape)
+        ↓
+     Grafana
+        ↓
+     Alerts
+```
+
+## 📜 Logs Pipeline
+
+```text
+Docker Containers
+        ↓
+     Promtail
+        ↓
+       Loki
+        ↓
+     Grafana
+```
+
+## 🔍 Traces Pipeline
+
+```text
+Application / curl
+        ↓
+  OTEL Collector
+        ↓
+ Debug Output (future: Tempo)
 ```
 
 ---
 
-## 🧰 Tech Stack
+# ⚙️ Workflow (How Everything Works)
 
-* **Prometheus** → Metrics collection (pull-based)
-* **Node Exporter** → Host-level metrics (CPU, RAM, Disk)
-* **cAdvisor** → Container metrics
-* **Grafana** → Visualization + alerting
-* **Loki** → Log aggregation (label-based indexing)
-* **Promtail** → Log shipping agent
-* **OpenTelemetry Collector** → Metrics + traces pipeline
-* **Notes App** → Sample workload
+### 1. Data Collection
+
+* Node Exporter → host metrics
+* cAdvisor → container metrics
+* Promtail → container logs
+* OTEL → traces + custom metrics
+
+### 2. Data Aggregation
+
+* Prometheus → metrics storage (TSDB)
+* Loki → logs (label-based indexing)
+* OTEL Collector → telemetry routing
+
+### 3. Visualization
+
+* Grafana dashboards (auto-provisioned)
+* Logs + metrics correlation
+* Explore mode for debugging
+
+### 4. Alerting
+
+* Prometheus rules (infrastructure alerts)
+* Grafana alerts (application-level alerts)
 
 ---
 
-## ⚡ Quick Start
+# 📁 Repository Structure
+
+```text
+devops-observability-stack/
+│
+├── day-01/   # Prometheus basics
+├── day-02/   # Exporters + Grafana dashboards
+├── day-03/   # Loki + Promtail (logs)
+├── day-04/   # OTEL + Alerting
+│
+└── day-05-observability-project/   # Full integrated system
+    ├── docker-compose.yml
+    ├── prometheus.yml
+    ├── alert-rules.yml
+    ├── grafana/
+    ├── loki/
+    ├── promtail/
+    ├── otel-collector/
+    └── notes-app/
+```
+
+---
+
+# ⚡ Quick Start (Run Full Stack)
 
 ```bash
 cd day-05-observability-project
@@ -45,185 +150,117 @@ docker compose up -d
 docker compose ps
 ```
 
-Access:
+---
 
-* Grafana → http://localhost:3000 (admin/admin)
-* Prometheus → http://localhost:9090
-* cAdvisor → http://localhost:8080
-* Notes App → http://localhost:8000
+# 🌐 Access Points
 
-````
+| Service    | URL                   | Purpose             |
+| ---------- | --------------------- | ------------------- |
+| Grafana    | http://localhost:3000 | Dashboards & alerts |
+| Prometheus | http://localhost:9090 | Metrics             |
+| Loki       | http://localhost:3100 | Logs backend        |
+| cAdvisor   | http://localhost:8080 | Container metrics   |
+| Notes App  | http://localhost:8000 | Demo app            |
 
 ---
 
-## ✅ Service Validation
+# ✅ Validation Guide
 
-| Service | Port | Check |
-|--------|------|------|
-| Prometheus | 9090 | `/targets` should be UP |
-| Node Exporter | 9100 | `curl localhost:9100/metrics` |
-| cAdvisor | 8080 | Web UI |
-| Grafana | 3000 | Dashboard loads |
-| Loki | 3100 | `/ready` |
-| Promtail | 9080 | Internal |
-| OTEL Collector | 4317/4318 | `docker logs otel-collector` |
-| Notes App | 8000 | UI loads |
-
----
-
-## 📊 Metrics Validation (PromQL)
-
-Run in Prometheus UI:
+## Metrics Check
 
 ```promql
-# All targets healthy
 up
-
-# CPU usage
-100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
-
-# Memory usage %
 (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
-
-# Container CPU
-rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100
-
-# Top 3 containers by memory
 topk(3, container_memory_usage_bytes{name!=""})
-````
-
----
-
-## 📜 Logs Validation (Loki / LogQL)
-
-Generate logs:
-
-```bash
-for i in $(seq 1 50); do curl -s http://localhost:8000 > /dev/null; done
 ```
 
-Queries in Grafana → Explore:
+## Logs Check
 
 ```logql
 {job="docker"}
-{container_name="notes-app"}
-{job="docker"} |= "error"
 {container_name="notes-app"} |= "GET"
-sum by (container_name) (rate({job="docker"}[5m]))
 ```
 
----
-
-## 🔍 Traces Validation (OTEL)
-
-Send test trace:
+## Traces Check
 
 ```bash
-curl -X POST http://localhost:4318/v1/traces \
-  -H "Content-Type: application/json" \
-  -d '{...}'
-```
-
-Check:
-
-```bash
-docker logs otel-collector | grep test-span
+docker logs otel-collector
 ```
 
 ---
 
-## 📈 Dashboard (Production Overview)
+# 📊 Key Dashboards
 
-Custom dashboard includes:
-
-### System Health
-
-* CPU Usage %
-* Memory Usage %
-* Disk Usage %
-* Targets UP
-
-### Container Metrics
-
-* CPU usage per container
-* Memory usage per container
-* Running container count
-
-### Logs
-
-* Notes-app logs
-* Error rate
-* Log volume
-
-### Service Health
-
-* Prometheus scrape latency
-* OTEL metrics ingestion
+* System Health (CPU, Memory, Disk)
+* Container Metrics (CPU, Memory usage)
+* Logs (Live container logs)
+* Error Rate & Log Volume
+* Service Health (scrape latency, ingestion)
 
 ---
 
-## 🔔 Alerting
+# 🔔 Alerting Strategy
 
-Prometheus alert rules include:
+### Prometheus Alerts
 
-* High CPU usage (>80%)
-* High Memory usage (>75%)
-* Disk usage (>90%)
-* Container down
-* Target down
+* High CPU (>80%)
+* High Memory (>75%)
+* Disk Usage (>90%)
+* Target Down
+* Container Down
 
-Grafana alerting used for:
+### Grafana Alerts
 
 * Container memory spikes
-* Notification routing
+* Application-level anomalies
 
 ---
 
-## 🔁 Data Flow Validation
+# 📈 What Makes This Project Strong
 
-| Pipeline | Flow                               |
-| -------- | ---------------------------------- |
-| Metrics  | Exporters → Prometheus → Grafana   |
-| Logs     | Docker → Promtail → Loki → Grafana |
-| Traces   | OTEL → Collector → Debug           |
-
----
-
-## 📚 Learning Mapping
-
-| Day | Concept                             |
-| --- | ----------------------------------- |
-| 73  | Prometheus, metrics                 |
-| 74  | Node Exporter, cAdvisor, dashboards |
-| 75  | Loki, Promtail, logs                |
-| 76  | OTEL, traces, alerting              |
-| 77  | Full stack integration              |
+✔ Full observability stack (not just one tool)
+✔ Real data pipelines (metrics, logs, traces)
+✔ Alerting + dashboards
+✔ Docker-based reproducible setup
+✔ Production-style architecture
 
 ---
 
-## ⚖️ Comparison with Managed Tools
+# ⚖️ vs Managed Tools
 
-| Feature     | This Stack | Datadog / CloudWatch |
-| ----------- | ---------- | -------------------- |
-| Cost        | Free       | Paid                 |
-| Setup       | Manual     | Easy                 |
-| Flexibility | High       | Medium               |
-| Control     | Full       | Limited              |
+| Feature     | This Stack | Cloud (Datadog / CloudWatch) |
+| ----------- | ---------- | ---------------------------- |
+| Cost        | Free       | Paid                         |
+| Control     | Full       | Limited                      |
+| Setup       | Manual     | Easy                         |
+| Flexibility | High       | Medium                       |
 
 ---
 
-## 🚀 Production Improvements
+# 🚀 Production Enhancements
 
-* Alertmanager integration (Slack, PagerDuty)
-* Grafana Tempo for trace storage
-* TLS/HTTPS for all services
+* Alertmanager (Slack / PagerDuty integration)
+* Grafana Tempo (trace storage)
+* TLS/HTTPS security
 * Authentication (Grafana + Prometheus)
-* Persistent storage (S3/GCS)
-* High Availability setup
+* S3/GCS storage for logs & metrics
+* HA (multi-node Prometheus + Loki)
 
 ---
 
-## 🧹 Cleanup
+# 🧠 Key Learnings
+
+| Day | Focus                   |
+| --- | ----------------------- |
+| 01  | Prometheus + Metrics    |
+| 02  | Exporters + Grafana     |
+| 03  | Logs (Loki + Promtail)  |
+| 04  | Traces + Alerting       |
+| 05  | Full System Integration |
+
+---
+
+# 🧹 Cleanup
 
 ```bash
 docker compose down
@@ -232,15 +269,8 @@ docker compose down -v
 
 ---
 
-## 🧠 Key Insight
+# 👨‍💻 Author
 
-Monitoring tells you *something is wrong*.
-Observability lets you **find why, where, and how fast**.
-
----
-
-## 👨‍💻 Author
-
-Built as part of a structured DevOps learning path (Day 01–05).
+Built by Shibnath as part of a structured DevOps learning journey focused on real-world observability systems.
 
 ---
